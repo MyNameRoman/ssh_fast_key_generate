@@ -1,27 +1,33 @@
 #!/bin/bash
 
-# Скрипт для быстрой генерации SSH-ключей
-
-# Спросить у пользователя имя файла ключа
-read -p "Введите имя файла для нового SSH-ключа (по умолчанию: id_rsa): " key_name
-
-# Если имя файла не указано, использовать id_rsa по умолчанию
-if [ -z "$key_name" ]; then
-  key_name="id_rsa"
+# Проверяем наличие аргументов
+if [ -z "$1" ]; then
+  echo "Использование: $0 <имя_ключа>"
+  exit 1
 fi
 
-# Спросить комментарий для ключа
-read -p "Введите комментарий для ключа (например, email): " key_comment
+# Путь для сохранения ключей
+KEY_NAME=$1
+SSH_DIR="$HOME/.ssh"
+KEY_PATH="$SSH_DIR/$KEY_NAME"
 
-# Создать папку .ssh, если она не существует
-mkdir -p ~/.ssh
+# Создание директории .ssh, если её нет
+if [ ! -d "$SSH_DIR" ]; then
+  mkdir -p "$SSH_DIR"
+  chmod 700 "$SSH_DIR"
+fi
 
 # Генерация SSH-ключа
-ssh-keygen -t rsa -b 4096 -C "$key_comment" -f ~/.ssh/"$key_name"
+echo "Генерация SSH ключа с именем $KEY_NAME..."
+ssh-keygen -t rsa -b 4096 -f "$KEY_PATH" -q -N ""
 
-# Задать правильные права доступа для ключей
-chmod 600 ~/.ssh/"$key_name"
-chmod 644 ~/.ssh/"$key_name".pub
+# Добавление приватного ключа в SSH-агент
+echo "Добавляем приватный ключ в SSH-агент..."
+eval "$(ssh-agent -s)"
+ssh-add "$KEY_PATH"
 
-# Сообщить о завершении
-echo "SSH-ключи успешно созданы!"
+# Показ публичного ключа
+echo "Ваш публичный ключ:"
+cat "${KEY_PATH}.pub"
+
+echo "Готово! Приватный ключ сохранён в $KEY_PATH, публичный ключ в ${KEY_PATH}.pub."
