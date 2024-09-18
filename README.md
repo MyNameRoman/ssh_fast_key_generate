@@ -1,6 +1,6 @@
 # Как пользоваться:
 
-* wget https://github.com/MyNameRoman/ssh_fast_key_generate.git
+* git clone https://github.com/MyNameRoman/ssh_fast_key_generate.git
   
 * Сделай файл исполняемым: chmod +x generate_ssh_key.sh
   
